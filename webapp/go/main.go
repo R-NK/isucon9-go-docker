@@ -298,7 +298,7 @@ func nrt(inner http.Handler) http.Handler {
 func main() {
 	app, _ = newrelic.NewApplication(
 		newrelic.ConfigAppName("isucon9"),
-		newrelic.ConfigLicense("8ca75e72632104f5cef8425330bf455e3fe7NRAL"),
+		newrelic.ConfigLicense(os.Getenv("NEW-RELIC-KEY")),
 		newrelic.ConfigDistributedTracerEnabled(true),
 		newrelic.ConfigDebugLogger(os.Stdout),
 	)
