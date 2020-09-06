@@ -18,7 +18,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/sessions"
 	"github.com/jmoiron/sqlx"
-	"github.com/newrelic/go-agent/v3/newrelic"
 	goji "goji.io"
 	"goji.io/pat"
 	"golang.org/x/crypto/bcrypt"
@@ -279,29 +278,7 @@ func init() {
 	))
 }
 
-var app *newrelic.Application
-
-func nrt(inner http.Handler) http.Handler {
-	mw := func(w http.ResponseWriter, r *http.Request) {
-		txn := app.StartTransaction(r.URL.Path)
-		defer txn.End()
-
-		r = newrelic.RequestWithTransactionContext(r, txn)
-
-		txn.SetWebRequestHTTP(r)
-		w = txn.SetWebResponse(w)
-		inner.ServeHTTP(w, r)
-	}
-	return http.HandlerFunc(mw)
-}
-
 func main() {
-	app, _ = newrelic.NewApplication(
-		newrelic.ConfigAppName("isucon9"),
-		newrelic.ConfigLicense(os.Getenv("NEW-RELIC-KEY")),
-		newrelic.ConfigDistributedTracerEnabled(true),
-		newrelic.ConfigDebugLogger(os.Stdout),
-	)
 
 	host := os.Getenv("MYSQL_HOST")
 	if host == "" {
@@ -344,7 +321,6 @@ func main() {
 	defer dbx.Close()
 
 	mux := goji.NewMux()
-	mux.Use(nrt)
 
 	// API
 	mux.HandleFunc(pat.Post("/initialize"), postInitialize)
