@@ -25,3 +25,27 @@ staticcheck:
 
 clean:
 	rm -rf bin/*
+
+init: download-images download-bench initialize-sql
+
+download-images:
+	cd webapp/public && \
+	wget https://github.com/isucon/isucon9-qualify/releases/download/v2/initial.zip && \
+	unzip initial.zip && \
+	mv v3_initial_data upload
+
+download-bench:
+	cd initial-data && \
+	wget https://github.com/isucon/isucon9-qualify/releases/download/v2/bench1.zip && \
+	unzip bench1.zip && \
+	mv v3_bench1 images
+
+initialize-sql:
+	cd initial-data && \
+	make
+
+initialize-db:
+	docker-compose exec db bash -c 'cd /docker-entrypoint-initdb.d && ./init.sh'
+
+benchmark:
+	docker-compose exec go bash -c 'cd ../../ && ./bin/benchmarker'

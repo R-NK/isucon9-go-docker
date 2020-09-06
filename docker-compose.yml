@@ -1,17 +1,20 @@
 version: '3'
 services:
-  ruby:
-    build: ./webapp/ruby
+  go:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
     volumes:
-      - .:/app
+      - ./:/app
+      - dummy:/app/webapp/sql
     ports:
-      - 127.0.0.1:5555:5555
-      - 127.0.0.1:7000:7000
-      - 127.0.0.1:8000:8000
+      - 8000:8000
     environment:
       - MYSQL_HOST=db
       - MYSQL_USER=root
       - MYSQL_PASS=secret
+    working_dir: /app/webapp/go
+    command: bash -c "GO111MODULE=on go run api.go main.go"
   db:
     image: mysql:5.7
     volumes:
@@ -24,10 +27,6 @@ services:
       - MYSQL_USER=root
       - MYSQL_PASS=secret
     ports:
-      - 127.0.0.1:3306:3306
-  golang:
-    image: golang:1.14.6
-    volumes:
-      - .:/app
-    working_dir: /app
-    command: /bin/sh -c "while sleep 1000; do :; done"
+      - 3306:3306
+volumes:
+  dummy:
